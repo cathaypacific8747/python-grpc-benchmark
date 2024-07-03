@@ -1,3 +1,0 @@
-#!/bin/sh
-
-rm -rvf __pycache__ test_pb2*.py venv

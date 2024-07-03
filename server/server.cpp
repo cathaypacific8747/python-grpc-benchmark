@@ -7,30 +7,31 @@ using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::Status;
-using test::HelloRequest;
-using test::HelloReply;
-using test::StreamRequest;
-using test::NumberReply;
 using test::Greeter;
+using test::HelloReply;
+using test::HelloRequest;
+using test::NumberReply;
+using test::NumberRequest;
 
-// Logic and data behind the server's behavior.
 class GreeterServiceImpl final : public Greeter::Service {
-    Status SayHello(ServerContext* context, const HelloRequest* request, HelloReply* reply) override {
+    Status SayHello(ServerContext *context, const HelloRequest *request,
+                    HelloReply *reply) override {
         std::string prefix("Hello, ");
-        std::cout << "Received SayHello request: " << request->name() << std::endl;
+        std::cout << "Received SayHello request: " << request->name()
+                  << std::endl;
         reply->set_message(prefix + request->name());
         return Status::OK;
     }
-    Status StreamNumbers(ServerContext* context, const StreamRequest* request, grpc::ServerWriter<NumberReply>* writer) override {
-        int number = 1;
+    Status StreamNumbers(ServerContext *context, const NumberRequest *request,
+                         grpc::ServerWriter<NumberReply> *writer) override {
         std::cout << "Received StreamNumbers request" << std::endl;
-        while (true) {
+        for (int i = 0; i < request->count(); i++) {
             NumberReply reply;
-            std::cout << "Sending number " << number << std::endl;
-            reply.set_number(number++);
+            reply.set_number(i);
+            std::cout << "Sending number " << i << std::endl;
             if (!writer->Write(reply)) {
                 std::cout << "Client disconnected" << std::endl;
-                break; // Break the loop if the client has disconnected
+                break;
             }
         }
         return Status::OK;
@@ -56,7 +57,7 @@ void RunServer() {
     server->Wait();
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     RunServer();
     return 0;
 }
